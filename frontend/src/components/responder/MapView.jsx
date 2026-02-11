@@ -1,8 +1,8 @@
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import MapControls from "./MapControls";
 
-// Fix marker icon issue
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl:
@@ -16,27 +16,25 @@ L.Icon.Default.mergeOptions({
 export default function MapView() {
   return (
     <MapContainer
-      center={[28.6139, 77.209]} // Delhi example
-      zoom={12}
+      center={[28.6139, 77.209]}
+      zoom={13}
+      zoomControl={false}
       className="w-full h-full"
     >
       <TileLayer
-        attribution='&copy; OpenStreetMap contributors'
+        attribution="&copy; OpenStreetMap contributors"
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
 
-      {/* Incident Marker */}
+      {/* MUST BE INSIDE */}
+      <MapControls />
+
       <Marker position={[28.6239, 77.219]}>
-        <Popup>
-          High Severity Fire Reported
-        </Popup>
+        <Popup>High Severity Fire Reported</Popup>
       </Marker>
 
-      {/* Responder Marker */}
       <Marker position={[28.6039, 77.199]}>
-        <Popup>
-          Your Unit Location
-        </Popup>
+        <Popup>Your Unit Location</Popup>
       </Marker>
     </MapContainer>
   );

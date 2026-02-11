@@ -10,9 +10,10 @@ export default function ResponderLayout() {
         <div className="flex items-center gap-3">
           <div className="bg-blue-600 p-2 rounded-lg">
             <span className="material-icons text-white text-sm">
-              
+              emergency
             </span>
           </div>
+
           <span className="font-bold text-lg">
             ResQHub <span className="text-blue-400">Responder</span>
           </span>
@@ -32,8 +33,8 @@ export default function ResponderLayout() {
 
       </header>
 
-      {/* Main Content */}
-      <div className="flex-1 flex overflow-hidden">
+      {/* Main Content - natural flow */}
+      <div className="flex flex-1">
         <Outlet />
       </div>
 
