@@ -1,12 +1,14 @@
-
 import { useState } from "react";
+import { useIncidents } from "../../context/IncidentContext";
+import { Link } from "react-router-dom";
 
 export default function Dashboard() {
   const [incidentType, setIncidentType] = useState("Medical Emergency");
-  const [urgency, setUrgency] = useState("medium");
+  const [urgency, setUrgency] = useState("MEDIUM");
   const [description, setDescription] = useState("");
   const [location, setLocation] = useState(null);
-  const [reports, setReports] = useState([]);
+
+  const { addIncident, incidents } = useIncidents();
 
   // Detect Location
   const detectLocation = () => {
@@ -37,22 +39,23 @@ export default function Dashboard() {
       return;
     }
 
-    const newReport = {
-      id: Date.now(),
-      incidentType,
-      urgency,
+    addIncident({
+      title: incidentType,
       description,
+      severity: urgency,
       location,
-      status: "Pending",
-    };
-
-    setReports([newReport, ...reports]);
+    });
 
     // Reset form
     setDescription("");
     setLocation(null);
-    setUrgency("medium");
+    setUrgency("MEDIUM");
   };
+
+  // Show active (non-resolved) reports
+  const myReports = incidents.filter(
+    (incident) => incident.status !== "RESOLVED"
+  );
 
   return (
     <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -67,52 +70,51 @@ export default function Dashboard() {
 
           <form className="space-y-6" onSubmit={handleSubmit}>
 
-            {/* Incident Type + Urgency */}
-            <div className="grid grid-cols-2 gap-4">
+            {/* Incident Type */}
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-slate-500 uppercase">
+                Incident Type
+              </label>
 
-              <div className="space-y-2">
-                <label className="text-xs font-bold text-slate-500 uppercase">
-                  Incident Type
-                </label>
+              <select
+                value={incidentType}
+                onChange={(e) => setIncidentType(e.target.value)}
+                className="w-full bg-slate-800 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm py-3 px-4"
+              >
+                <option>Medical Emergency</option>
+                <option>Fire Incident</option>
+                <option>Natural Disaster</option>
+                <option>Security Threat</option>
+                <option>Missing Person</option>
+              </select>
+            </div>
 
-                <select
-                  value={incidentType}
-                  onChange={(e) => setIncidentType(e.target.value)}
-                  className="w-full bg-slate-800 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm py-3 px-4"
-                >
-                  <option>Medical Emergency</option>
-                  <option>Fire Incident</option>
-                  <option>Natural Disaster</option>
-                  <option>Security Threat</option>
-                  <option>Missing Person</option>
-                </select>
+            {/* Urgency Level */}
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-slate-500 uppercase">
+                Urgency Level
+              </label>
+
+              <div className="flex gap-2">
+                {["HIGH", "MEDIUM", "LOW"].map((level) => (
+                  <button
+                    key={level}
+                    type="button"
+                    onClick={() => setUrgency(level)}
+                    className={`flex-1 py-3 px-4 rounded-lg text-xs font-bold transition ${
+                      urgency === level
+                        ? level === "HIGH"
+                          ? "bg-red-600 text-white"
+                          : level === "MEDIUM"
+                          ? "bg-orange-500 text-white"
+                          : "bg-slate-600 text-white"
+                        : "bg-slate-800 text-slate-400"
+                    }`}
+                  >
+                    {level}
+                  </button>
+                ))}
               </div>
-
-              <div className="space-y-2">
-                <label className="text-xs font-bold text-slate-500 uppercase">
-                  Urgency Level
-                </label>
-
-                <div className="flex gap-2">
-                  {["medium", "critical"].map((level) => (
-                    <button
-                      key={level}
-                      type="button"
-                      onClick={() => setUrgency(level)}
-                      className={`flex-1 py-3 px-4 rounded-lg text-xs font-bold transition ${
-                        urgency === level
-                          ? level === "critical"
-                            ? "bg-red-600 text-white ring-4 ring-red-600/10"
-                            : "bg-orange-500 text-white"
-                          : "bg-slate-800 text-slate-400"
-                      }`}
-                    >
-                      {level.toUpperCase()}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
             </div>
 
             {/* Description */}
@@ -162,18 +164,25 @@ export default function Dashboard() {
             </div>
 
             {/* Submit */}
-            <button
-              type="submit"
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-xl font-bold text-lg shadow-xl shadow-blue-600/20 transition-all"
-            >
-              SUBMIT EMERGENCY REPORT
-            </button>
+<button
+  type="submit"
+  className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-xl font-bold text-lg shadow-xl shadow-blue-600/20 transition-all"
+>
+  SUBMIT EMERGENCY REPORT
+</button>
 
+{/* Temporary Navigation Button for Testing */}
+<Link
+  to="/responder/dashboard"
+  className="block text-center bg-green-600 hover:bg-green-700 text-white py-3 rounded-xl font-semibold mt-4 transition"
+>
+  Go To Responder Dashboard
+</Link>
           </form>
         </section>
 
       </div>
-
+  
       {/* RIGHT SECTION */}
       <div className="lg:col-span-5 space-y-6">
 
@@ -183,13 +192,13 @@ export default function Dashboard() {
             Active Reports
           </h2>
 
-          {reports.length === 0 ? (
+          {myReports.length === 0 ? (
             <p className="text-slate-400 text-sm">
               No active reports yet.
             </p>
           ) : (
             <div className="space-y-4">
-              {reports.map((report) => (
+              {myReports.map((report) => (
                 <div
                   key={report.id}
                   className="p-4 rounded-xl bg-slate-800 border border-blue-500/10"
@@ -199,19 +208,13 @@ export default function Dashboard() {
                       #{report.id}
                     </span>
 
-                    <span
-                      className={`text-xs font-bold ${
-                        report.urgency === "critical"
-                          ? "text-red-400"
-                          : "text-orange-400"
-                      }`}
-                    >
-                      {report.urgency.toUpperCase()}
+                    <span className="text-xs font-bold text-orange-400">
+                      {report.status}
                     </span>
                   </div>
 
                   <p className="text-sm font-semibold">
-                    {report.incidentType}
+                    {report.title}
                   </p>
 
                   <p className="text-xs text-slate-400 line-clamp-1">
@@ -231,7 +234,7 @@ export default function Dashboard() {
 
           <ul className="space-y-3 text-xs">
             <li>1. Move to a safe location.</li>
-            <li>2. Keep phone volume high.</li>
+            <li>2. Keep phone screen on and volume high.</li>
             <li>3. Gather important documents.</li>
           </ul>
         </section>

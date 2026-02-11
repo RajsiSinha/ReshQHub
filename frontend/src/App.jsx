@@ -1,10 +1,12 @@
 import { Routes, Route } from "react-router-dom";
+
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
 import Home from "./pages/Home";
 
 import MainLayout from "./components/layout/MainLayout";
 import ResponderLayout from "./layouts/ResponderLayout";
+import AdminLayout from "./layouts/AdminLayout";
 
 import Dashboard from "./pages/victim/Dashboard";
 import History from "./pages/victim/History";
@@ -12,7 +14,7 @@ import Map from "./pages/victim/Map";
 import Resources from "./pages/victim/Resources";
 
 import ResponderDashboard from "./pages/responder/ResponderDashboard";
-import AdminDashboard from "./pages/admin/AdminDashboard";
+import CommandCenter from "./pages/admin/CommandCenter";
 
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -25,7 +27,7 @@ function App() {
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
 
-      {/* ================= VICTIM + ADMIN (MainLayout) ================= */}
+      {/* ================= VICTIM (MainLayout) ================= */}
       <Route
         element={
           <ProtectedRoute>
@@ -33,8 +35,6 @@ function App() {
           </ProtectedRoute>
         }
       >
-
-        {/* Victim Routes */}
         <Route
           path="/victim/dashboard"
           element={
@@ -70,20 +70,9 @@ function App() {
             </ProtectedRoute>
           }
         />
-
-        {/* Admin Route */}
-        <Route
-          path="/admin/dashboard"
-          element={
-            <ProtectedRoute allowedRole="admin">
-              <AdminDashboard />
-            </ProtectedRoute>
-          }
-        />
-
       </Route>
 
-      {/* ================= RESPONDER (Separate Layout) ================= */}
+      {/* ================= RESPONDER ================= */}
       <Route
         path="/responder"
         element={
@@ -93,6 +82,19 @@ function App() {
         }
       >
         <Route path="dashboard" element={<ResponderDashboard />} />
+      </Route>
+
+      {/* ================= ADMIN ================= */}
+      <Route
+        path="/admin"
+        element={
+          <ProtectedRoute allowedRole="admin">
+            <AdminLayout />
+          </ProtectedRoute>
+        }
+      >
+        <Route index element={<CommandCenter />} />
+        <Route path="dashboard" element={<CommandCenter />} />
       </Route>
 
       {/* FALLBACK */}

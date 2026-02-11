@@ -4,61 +4,63 @@ import AlertBanner from "../../components/responder/AlertBanner";
 import MapView from "../../components/responder/MapView";
 import LayerToggle from "../../components/responder/LayerToggle";
 import RoutingCard from "../../components/responder/RoutingCard";
+import { useIncidents } from "../../context/IncidentContext";
 
 export default function ResponderDashboard() {
 
-  const [incidents, setIncidents] = useState([
-    {
-      id: "INC-4092",
-      severity: "HIGH",
-      title: "Structural Fire - Industrial Zone",
-      description: "Smoke reported on 4th floor.",
-    },
-    {
-      id: "INC-4093",
-      severity: "MEDIUM",
-      title: "Road Accident - Sector 12",
-      description: "Two vehicles involved. Minor injuries.",
-    },
-    {
-      id: "INC-4094",
-      severity: "LOW",
-      title: "Water Leakage - Residential Block",
-      description: "Basement flooding reported.",
-    },
-  ]);
+  const { incidents, updateStatus } = useIncidents();
 
-  const [filter, setFilter] = useState("ALL");
+  const [statusTab, setStatusTab] = useState("PENDING");
+  const [severityFilter, setSeverityFilter] = useState("ALL");
   const [search, setSearch] = useState("");
 
-  const handleAccept = (id) => {
-    setIncidents(prev => prev.filter(i => i.id !== id));
-  };
+  // Filter by Status
+  const statusFiltered = incidents.filter(
+    (incident) => incident.status === statusTab
+  );
 
-  const filteredIncidents = incidents.filter((incident) => {
-    const matchesFilter =
-      filter === "ALL" || incident.severity === filter;
+  // Filter by Severity + Search
+  const filteredIncidents = statusFiltered.filter((incident) => {
+    const matchesSeverity =
+      severityFilter === "ALL" || incident.severity === severityFilter;
 
     const matchesSearch =
       incident.title.toLowerCase().includes(search.toLowerCase()) ||
       incident.id.toLowerCase().includes(search.toLowerCase());
 
-    return matchesFilter && matchesSearch;
+    return matchesSeverity && matchesSearch;
   });
 
   return (
     <div className="flex flex-col w-full h-full bg-gradient-to-br from-[#0b1420] to-[#0e1c2f]">
 
-      <div className="flex flex-1 min-h-0">
+      <div className="flex flex-1">
 
         {/* ================= LEFT PANEL ================= */}
         <div className="w-[460px] bg-[#0f1b2a] border-r border-blue-500/10 p-6 space-y-4 overflow-y-auto">
 
           <h2 className="text-slate-400 text-sm font-semibold tracking-wide">
-            INCOMING INCIDENTS
+            INCIDENT CONTROL CENTER
           </h2>
 
-          {/* Search */}
+          {/* STATUS TABS */}
+          <div className="flex gap-3">
+            {["PENDING", "ASSIGNED", "RESOLVED"].map((status) => (
+              <button
+                key={status}
+                onClick={() => setStatusTab(status)}
+                className={`px-4 py-2 text-xs font-bold rounded-full transition ${
+                  statusTab === status
+                    ? "bg-blue-600 text-white"
+                    : "bg-[#162435] text-slate-400"
+                }`}
+              >
+                {status}
+              </button>
+            ))}
+          </div>
+
+          {/* SEARCH */}
           <input
             type="text"
             placeholder="Search incidents..."
@@ -67,15 +69,15 @@ export default function ResponderDashboard() {
             className="w-full bg-[#162435] p-3 rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-600"
           />
 
-          {/* Filters */}
+          {/* SEVERITY FILTER */}
           <div className="flex gap-3">
             {["ALL", "HIGH", "MEDIUM", "LOW"].map((level) => (
               <button
                 key={level}
-                onClick={() => setFilter(level)}
+                onClick={() => setSeverityFilter(level)}
                 className={`px-4 py-2 text-xs font-bold rounded-full transition ${
-                  filter === level
-                    ? "bg-blue-600 text-white"
+                  severityFilter === level
+                    ? "bg-purple-600 text-white"
                     : "bg-[#162435] text-slate-400"
                 }`}
               >
@@ -84,10 +86,10 @@ export default function ResponderDashboard() {
             ))}
           </div>
 
-          {/* Incident List */}
+          {/* INCIDENT LIST */}
           {filteredIncidents.length === 0 ? (
             <p className="text-slate-500 text-sm">
-              No incidents found.
+              No incidents in {statusTab}.
             </p>
           ) : (
             filteredIncidents.map((incident) => (
@@ -101,19 +103,25 @@ export default function ResponderDashboard() {
                     : "bg-[#162435] border-slate-500/20"
                 }`}
               >
-                <span
-                  className={`text-xs px-3 py-1 rounded-full font-bold ${
-                    incident.severity === "HIGH"
-                      ? "bg-red-600 text-white"
-                      : incident.severity === "MEDIUM"
-                      ? "bg-orange-500 text-white"
-                      : "bg-slate-500 text-white"
-                  }`}
-                >
-                  {incident.severity}
-                </span>
+                <div className="flex justify-between mb-2">
+                  <span className="text-xs font-bold text-blue-400">
+                    #{incident.id}
+                  </span>
 
-                <h3 className="text-lg font-semibold mt-4">
+                  <span
+                    className={`text-xs font-bold ${
+                      incident.severity === "HIGH"
+                        ? "text-red-400"
+                        : incident.severity === "MEDIUM"
+                        ? "text-orange-400"
+                        : "text-slate-400"
+                    }`}
+                  >
+                    {incident.severity}
+                  </span>
+                </div>
+
+                <h3 className="text-lg font-semibold mt-2">
                   {incident.title}
                 </h3>
 
@@ -121,12 +129,29 @@ export default function ResponderDashboard() {
                   {incident.description}
                 </p>
 
-                <button
-                  onClick={() => handleAccept(incident.id)}
-                  className="mt-5 w-full bg-blue-600 hover:bg-blue-700 py-3 rounded-xl font-semibold transition"
-                >
-                  ACCEPT CASE {incident.id}
-                </button>
+                {/* ACTION BUTTONS */}
+                {statusTab === "PENDING" && (
+                  <button
+                    onClick={() =>
+                      updateStatus(incident.id, "ASSIGNED")
+                    }
+                    className="mt-5 w-full bg-blue-600 hover:bg-blue-700 py-3 rounded-xl font-semibold transition"
+                  >
+                    ACCEPT CASE
+                  </button>
+                )}
+
+                {statusTab === "ASSIGNED" && (
+                  <button
+                    onClick={() =>
+                      updateStatus(incident.id, "RESOLVED")
+                    }
+                    className="mt-5 w-full bg-green-600 hover:bg-green-700 py-3 rounded-xl font-semibold transition"
+                  >
+                    MARK RESOLVED
+                  </button>
+                )}
+
               </div>
             ))
           )}

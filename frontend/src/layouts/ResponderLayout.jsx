@@ -10,7 +10,7 @@ export default function ResponderLayout() {
         <div className="flex items-center gap-3">
           <div className="bg-blue-600 p-2 rounded-lg">
             <span className="material-icons text-white text-sm">
-              emergency
+              
             </span>
           </div>
 

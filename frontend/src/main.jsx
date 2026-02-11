@@ -5,11 +5,17 @@ import { AuthProvider } from "./context/AuthContext";
 import App from "./App";
 import "./index.css";
 import "leaflet/dist/leaflet.css";
+import { IncidentProvider } from "./context/IncidentContext";
+
 
 ReactDOM.createRoot(document.getElementById("root")).render(
-  <BrowserRouter>
+  <React.StrictMode>
+    <BrowserRouter>
     <AuthProvider>
-      <App />
-    </AuthProvider>
-  </BrowserRouter>
+      <IncidentProvider>
+        <App />
+      </IncidentProvider>
+      </AuthProvider>
+    </BrowserRouter>
+  </React.StrictMode>
 );
