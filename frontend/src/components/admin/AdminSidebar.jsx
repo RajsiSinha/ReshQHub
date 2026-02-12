@@ -1,4 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
+import Logo from "../../assets/logo.png";
 
 export default function AdminSidebar() {
   const location = useLocation();
@@ -27,12 +28,17 @@ export default function AdminSidebar() {
       {/* Top */}
       <div>
         <div className="h-20 flex items-center px-6 border-b border-blue-500/10">
-          <div className="bg-blue-600 w-10 h-10 rounded-lg flex items-center justify-center font-bold">
-            *
+         <div className="flex items-center gap-0">
+            <img
+  src={Logo}
+  alt="ResQHub Logo"
+  className="w-8 h-8 object-contain"
+/>
+    <h1 className="ml-1 text-lg font-semibold tracking-tight">
+    <span className="text-white">ResQ</span>
+    <span className="text-blue-400">Hub</span>
+  </h1>
           </div>
-          <span className="ml-3 text-lg font-semibold">
-            ResQHub
-          </span>
         </div>
 
         <nav className="px-4 mt-6 space-y-2">

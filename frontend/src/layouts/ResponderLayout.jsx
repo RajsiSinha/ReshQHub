@@ -1,4 +1,5 @@
 import { Outlet } from "react-router-dom";
+import Logo from "../assets/logo.png";
 
 export default function ResponderLayout() {
   return (
@@ -7,17 +8,22 @@ export default function ResponderLayout() {
       {/* Top Header */}
       <header className="h-16 flex items-center justify-between px-6 border-b border-blue-500/10 bg-[#0f1b2a]">
 
-        <div className="flex items-center gap-3">
-          <div className="bg-blue-600 p-2 rounded-lg">
-            <span className="material-icons text-white text-sm">
-              
-            </span>
-          </div>
+      <div className="flex items-center">
 
-          <span className="font-bold text-lg">
-            ResQHub <span className="text-blue-400">Responder</span>
-          </span>
-        </div>
+  <img
+    src={Logo}
+    alt="ResQHub Logo"
+    className="w-8 h-8 object-contain"
+  />
+
+  <span className="ml-1 text-lg font-semibold tracking-tight">
+    ResQ<span className="text-blue-400">Hub</span>
+    <span className="text-slate-400 ml-1 text-sm font-medium">
+      Responder
+    </span>
+  </span>
+
+</div>
 
         <div className="flex items-center gap-6 text-sm text-slate-400">
           <span>🟢 42 Responders Online</span>

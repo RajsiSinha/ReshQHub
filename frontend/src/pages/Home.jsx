@@ -1,177 +1,358 @@
+
 import { Link } from "react-router-dom";
+import Logo from "../assets/logo.png";
+import { useIncidents } from "../context/IncidentContext";
+import { useMemo, useEffect, useState } from "react";
+import useNetworkStatus from "../hooks/useNetworkStatus";
+
+/* ================= COUNT UP HOOK ================= */
+function useCountUp(target, duration = 800) {
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    let start = 0;
+    const increment = target / (duration / 16);
+
+    const interval = setInterval(() => {
+      start += increment;
+
+      if (start >= target) {
+        setCount(target);
+        clearInterval(interval);
+      } else {
+        setCount(Math.floor(start));
+      }
+    }, 16);
+
+    return () => clearInterval(interval);
+  }, [target, duration]);
+
+  return count;
+}
 
 export default function Home() {
+  const isOnline = useNetworkStatus();
+  const { incidents } = useIncidents();
+
+  /* ================= OPTIMIZED STATS ================= */
+
+  const {
+    totalIncidents,
+    activeIncidents,
+    criticalAlerts,
+    resolvedIncidents,
+    resolutionRate,
+  } = useMemo(() => {
+    const total = incidents.length;
+
+    const resolved = incidents.filter(
+      (i) => i.status === "RESOLVED"
+    ).length;
+
+    const active = incidents.filter(
+      (i) => i.status !== "RESOLVED"
+    ).length;
+
+    const critical = incidents.filter(
+      (i) =>
+        i.severity === "HIGH" &&
+        i.status !== "RESOLVED"
+    ).length;
+
+    return {
+      totalIncidents: total,
+      activeIncidents: active,
+      criticalAlerts: critical,
+      resolvedIncidents: resolved,
+      resolutionRate:
+        total === 0
+          ? 0
+          : Math.round((resolved / total) * 100),
+    };
+  }, [incidents]);
+
+  /* ================= LIVE RESPONDER SIMULATION ================= */
+
+  const [liveResponders, setLiveResponders] = useState(42);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setLiveResponders((prev) =>
+        prev + Math.floor(Math.random() * 2)
+      );
+    }, 4000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  /* ================= ANIMATED VALUES ================= */
+
+  const animatedActive = useCountUp(activeIncidents);
+  const animatedCritical = useCountUp(criticalAlerts);
+  const animatedRate = useCountUp(resolutionRate);
+
   return (
-    <div className="bg-gradient-to-br from-[#0b1420] to-[#0e1c2f] text-slate-100 min-h-screen">
+  <div className="bg-gradient-to-br from-[#0b1420] to-[#0e1c2f] text-slate-100 min-h-screen">
+
+    {!isOnline && (
+  <div className="bg-red-600 text-white text-center py-2 text-sm font-semibold">
+    ⚠ No Internet Connection — Offline Mode Activated
+  </div>
+)}
 
       {/* ================= NAVBAR ================= */}
       <header className="sticky top-0 z-50 backdrop-blur-xl bg-[#0b1420]/80 border-b border-blue-500/10">
-        <div className="max-w-7xl mx-auto px-4 md:px-8 h-16 flex items-center justify-between">
+  <div className="max-w-7xl mx-auto px-4 md:px-8 h-16 flex items-center justify-between">
 
-          {/* Logo */}
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center font-bold text-lg">
-              ⚡
-            </div>
-            <span className="text-xl font-semibold">
-              ResQ<span className="text-blue-400">Hub</span>
-            </span>
-          </div>
+    {/* LEFT: Logo + LIVE */}
+    <div className="flex items-center gap-4">
 
-          {/* Nav Links */}
-          <nav className="hidden md:flex gap-8 text-sm text-slate-400">
-            <a href="#platform" className="hover:text-white transition">Platform</a>
-            <a href="#workflow" className="hover:text-white transition">Workflow</a>
-            <a href="#capabilities" className="hover:text-white transition">Capabilities</a>
-            <a href="#about" className="hover:text-white transition">About</a>
-          </nav>
+      <div className="flex items-center gap-2">
+        <img
+          src={Logo}
+          alt="ResQHub Logo"
+          className="w-9 h-9 object-contain"
+        />
+        <span className="text-xl font-semibold tracking-tight">
+          ResQ<span className="text-blue-400">Hub</span>
+        </span>
+      </div>
 
-          {/* Right */}
-          <div className="hidden md:flex items-center gap-4">
-            <Link
-              to="/login"
-              className="text-sm text-slate-400 hover:text-white transition"
-            >
-              Login
-            </Link>
+      {/* LIVE Indicator */}
+      <div className="hidden md:flex items-center gap-2 ml-2">
+        <span className="relative flex h-3 w-3">
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
+          <span className="relative inline-flex rounded-full h-3 w-3 bg-red-600"></span>
+        </span>
+        <span className="text-xs text-red-400 font-semibold tracking-wider">
+          LIVE
+        </span>
+      </div>
 
-            <Link
-              to="/victim/dashboard"
-              className="bg-red-600 hover:bg-red-700 px-5 py-2 rounded-xl text-sm font-semibold transition shadow-lg shadow-red-600/20"
-            >
-              🚨 REPORT EMERGENCY
-            </Link>
-          </div>
-        </div>
-      </header>
+    </div>
+
+    {/* CENTER NAV */}
+    <nav className="hidden md:flex gap-8 text-sm text-slate-400 font-medium">
+      <a href="#platform" className="hover:text-white transition">
+        Platform
+      </a>
+      <a href="#workflow" className="hover:text-white transition">
+        Workflow
+      </a>
+      <a href="#roles" className="hover:text-white transition">
+        Roles
+      </a>
+    </nav>
+
+    {/* RIGHT SIDE */}
+    <div className="flex items-center gap-4">
+
+      <Link
+        to="/login"
+        className="text-sm text-slate-400 hover:text-white transition"
+      >
+        Login
+      </Link>
+
+      <Link
+        to="/victim/dashboard"
+        className="bg-red-600 hover:bg-red-700 
+        px-5 py-2 rounded-xl text-sm font-semibold 
+        shadow-lg shadow-red-600/30 
+        transition transform hover:scale-105"
+      >
+        🚨 Report Emergency
+      </Link>
+
+    </div>
+
+  </div>
+</header>
 
       {/* ================= HERO ================= */}
-      <section className="max-w-7xl mx-auto px-4 md:px-8 py-16 md:py-24 grid lg:grid-cols-2 gap-12 md:gap-16 items-center">
+<section className="relative overflow-hidden max-w-7xl mx-auto px-4 md:px-8 py-20 md:py-28 grid lg:grid-cols-2 gap-12 items-center">
 
-        {/* LEFT */}
-        <div>
-          <span className="text-xs bg-blue-600/20 text-blue-400 px-4 py-1 rounded-full font-semibold">
-            🟢 LIVE RESPONSE NETWORK ACTIVE
-          </span>
+  {/* Subtle Animated Radar Background */}
+  <div className="absolute right-[-200px] top-[-150px] w-[600px] h-[600px] bg-blue-600/10 rounded-full blur-3xl animate-pulse"></div>
+  <div className="absolute left-[-200px] bottom-[-200px] w-[500px] h-[500px] bg-blue-400/5 rounded-full blur-3xl"></div>
 
-          <h1 className="text-3xl md:text-5xl font-bold mt-6 leading-tight">
-            Real-Time Disaster <br />
-            <span className="text-blue-400">
-              Intelligence Network
-            </span>
-          </h1>
+  {/* LEFT CONTENT */}
+  <div className="relative z-10">
 
-          <p className="text-slate-400 mt-6 text-base md:text-lg max-w-xl">
-            AI-powered emergency coordination connecting citizens,
-            command centers, and responders in one unified operational grid.
-          </p>
+    <span className="text-xs bg-blue-600/20 text-blue-400 px-4 py-1 rounded-full font-semibold tracking-wide">
+      LIVE DISASTER RESPONSE NETWORK
+    </span>
 
-          <div className="flex flex-col sm:flex-row gap-4 mt-8">
-            <Link
-              to="/admin/dashboard"
-              className="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-xl font-semibold shadow-lg shadow-blue-600/20 transition"
-            >
-              Launch Live Demo
-            </Link>
+    <h1 className="text-3xl md:text-5xl font-bold mt-6 leading-tight">
+      Unified Emergency <br />
+      <span className="text-blue-400 bg-gradient-to-r from-blue-400 to-blue-200 bg-clip-text text-transparent">
+        Coordination Platform
+      </span>
+    </h1>
 
-            <Link
-              to="/admin/command-center"
-              className="bg-[#162435] hover:bg-[#1e2f44] px-6 py-3 rounded-xl font-semibold transition"
-            >
-              View Command Center
-            </Link>
-          </div>
+    <p className="text-slate-400 mt-6 text-lg max-w-xl leading-relaxed">
+      ResQHub connects victims, responders, and command centers 
+      in a single real-time response ecosystem — ensuring faster 
+      reporting, smarter dispatch, and transparent coordination.
+    </p>
 
-          <p className="text-slate-500 text-sm mt-6">
-            Trusted by 500+ Emergency Response Units
-          </p>
+    <div className="flex flex-col sm:flex-row gap-4 mt-10">
+
+      <Link
+        to="/admin/dashboard"
+        className="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-xl font-semibold 
+        shadow-lg shadow-blue-600/30 
+        transition transform hover:scale-105"
+      >
+        Open Command Center
+      </Link>
+
+      <Link
+        to="/responder/dashboard"
+        className="bg-[#162435] hover:bg-[#1e2f44] px-6 py-3 rounded-xl font-semibold 
+        transition transform hover:scale-105 border border-blue-500/10"
+      >
+        Responder Panel
+      </Link>
+
+    </div>
+
+  </div>
+
+  {/* RIGHT HERO VISUAL */}
+<div className="relative z-10">
+
+  {/* Glowing Border */}
+  <div className="relative rounded-3xl p-[2px] bg-gradient-to-br from-blue-500/40 via-transparent to-blue-400/40">
+
+    <div className="bg-[#121f32] rounded-3xl p-6 shadow-2xl shadow-blue-500/10 overflow-hidden relative">
+
+      {/* Floating LIVE Badge */}
+      <div className="absolute top-4 right-4 bg-[#0e1a2b] border border-green-500/30 px-3 py-1 rounded-lg text-xs text-green-400 flex items-center gap-2 z-20">
+        <span className="relative flex h-2 w-2">
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-500 opacity-75"></span>
+          <span className="relative inline-flex rounded-full h-2 w-2 bg-green-600"></span>
+        </span>
+        Live Monitoring
+      </div>
+
+      {/* Radar + Map Container */}
+      <div className="relative h-80 rounded-2xl bg-[#0e1a2b] flex items-center justify-center overflow-hidden">
+
+        {/* Rotating World */}
+        <div className="absolute w-96 h-96 opacity-10 animate-spin-slow">
+          <img
+            src="https://upload.wikimedia.org/wikipedia/commons/8/80/World_map_-_low_resolution.svg"
+            alt="world map"
+            className="w-full h-full object-contain"
+          />
         </div>
 
-        {/* RIGHT - Live Preview Card */}
-        <div className="bg-[#121f32] border border-blue-500/10 rounded-3xl p-6 shadow-2xl shadow-blue-500/10">
+        {/* Radar Sweep */}
+        <svg className="absolute w-72 h-72">
+          <defs>
+            <linearGradient id="radarGradient">
+              <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.8" />
+              <stop offset="100%" stopColor="#3b82f6" stopOpacity="0" />
+            </linearGradient>
+          </defs>
 
-          <div className="h-80 bg-gradient-to-br from-[#0e1a2b] to-[#111c2d] rounded-2xl flex items-center justify-center text-slate-500 text-sm">
-            Live Operations Map Preview
-          </div>
+          <circle
+            cx="144"
+            cy="144"
+            r="120"
+            stroke="#1e40af"
+            strokeWidth="1"
+            fill="none"
+          />
+
+          <path
+            d="M144 144 L144 24 A120 120 0 0 1 264 144 Z"
+            fill="url(#radarGradient)"
+            className="origin-center animate-spin"
+          />
+        </svg>
+
+        {/* Dispatch Line Animation */}
+        <div className="absolute w-2 h-2 bg-red-500 rounded-full shadow-[0_0_10px_red] animate-pulse top-1/3 left-1/3"></div>
+
+        <svg className="absolute w-full h-full">
+          <line
+            x1="30%"
+            y1="30%"
+            x2="70%"
+            y2="60%"
+            stroke="#3b82f6"
+            strokeWidth="2"
+            strokeDasharray="6"
+            className="animate-dash"
+          />
+        </svg>
+
+        <div className="text-slate-400 text-sm tracking-wide z-10">
+          Global Response Grid Active
+        </div>
 
         </div>
-      </section>
+
+      </div>
+    </div>
+
+  </div>
+
+</section>
+
 
       {/* ================= LIVE STATUS STRIP ================= */}
       <section className="bg-[#0f1b2a] border-y border-blue-500/10 py-6">
-        <div className="max-w-7xl mx-auto px-4 md:px-8 grid grid-cols-2 md:grid-cols-4 gap-6 text-center text-sm">
+  <div className="max-w-7xl mx-auto px-4 md:px-8 grid grid-cols-2 md:grid-cols-4 gap-6 text-center text-sm">
 
-          <div>
-            <p className="text-slate-400">Active Incidents</p>
-            <p className="text-blue-400 text-xl font-bold mt-1">128</p>
-          </div>
+    <div className="hover:scale-105 transition">
+      <p className="text-slate-400">Active Incidents</p>
+      <p className="text-blue-400 text-xl font-bold mt-1">
+  {animatedActive}
+</p>
+    </div>
 
-          <div>
-            <p className="text-slate-400">Responders Online</p>
-            <p className="text-green-400 text-xl font-bold mt-1">42</p>
-          </div>
+    <div className="hover:scale-105 transition">
+      <p className="text-slate-400">Responders Online</p>
+      <p className="text-green-400 text-xl font-bold mt-1">
+  {liveResponders}
+</p>
+    </div>
 
-          <div>
-            <p className="text-slate-400">Critical Alerts</p>
-            <p className="text-red-400 text-xl font-bold mt-1">7</p>
-          </div>
+    <div className="hover:scale-105 transition">
+      <p className="text-slate-400">High Priority Alerts</p>
+      <p className="text-red-400 text-xl font-bold mt-1">
+  {animatedCritical}</p>
+    </div>
 
-          <div>
-            <p className="text-slate-400">Resolution Rate</p>
-            <p className="text-blue-400 text-xl font-bold mt-1">96%</p>
-          </div>
+    <div className="hover:scale-105 transition">
+      <p className="text-slate-400">Resolution Rate</p>
+      <p className="text-blue-400 text-xl font-bold mt-1">
+  {animatedRate}%
+</p>
+    </div>
 
-        </div>
-      </section>
+  </div>
+</section>
 
-      {/* ================= CAPABILITIES ================= */}
-      <section id="capabilities" className="max-w-7xl mx-auto px-4 md:px-8 py-16 md:py-24">
 
-        <h2 className="text-3xl font-bold text-center">
-          Core Emergency Capabilities
-        </h2>
-
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8 mt-12 md:mt-16">
-
-          {[
-            "AI Severity Classification",
-            "Geo-Spatial Risk Mapping",
-            "Smart Dispatch Engine",
-            "Operational Analytics",
-          ].map((title, index) => (
-            <div
-              key={index}
-              className="bg-[#121f32] border border-blue-500/10 p-8 rounded-2xl hover:border-blue-500/40 transition"
-            >
-              <div className="w-10 h-10 bg-blue-600/20 rounded-lg mb-4"></div>
-              <h3 className="font-semibold text-lg">{title}</h3>
-              <p className="text-slate-400 text-sm mt-3">
-                Intelligent automation and predictive response
-                coordination for high-impact emergency scenarios.
-              </p>
-            </div>
-          ))}
-
-        </div>
-      </section>
-
-      {/* ================= WORKFLOW ================= */}
+      {/* ================= HOW IT WORKS ================= */}
       <section id="workflow" className="bg-[#0f1b2a] py-16 md:py-24 border-y border-blue-500/10">
 
         <div className="max-w-6xl mx-auto px-4 md:px-8 text-center">
-
           <h2 className="text-3xl font-bold">
-            From Signal to Resolution
+            From Emergency to Resolution
           </h2>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-8 mt-12 md:mt-16">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mt-16">
 
             {[
-              "Report",
-              "AI Analysis",
-              "Command Review",
-              "Dispatch",
-              "Resolved",
+              "Victim Reports Incident",
+              "System Logs & Classifies",
+              "Responder Assigned",
+              "Command Monitors & Resolves",
             ].map((step, index) => (
               <div key={index}>
                 <div className="w-12 h-12 rounded-full border-2 border-blue-500 flex items-center justify-center mx-auto font-bold text-blue-400">
@@ -182,97 +363,137 @@ export default function Home() {
             ))}
 
           </div>
+        </div>
+      </section>
+
+      {/* ================= ROLE SECTION ================= */}
+      <section id="roles" className="max-w-7xl mx-auto px-4 md:px-8 py-16 md:py-24">
+
+        <h2 className="text-3xl font-bold text-center mb-16">
+          Built for Every Role
+        </h2>
+
+        <div className="grid md:grid-cols-3 gap-8">
+
+          {/* Victim */}
+          <div className="bg-[#121f32] border border-blue-500/10 p-8 rounded-2xl">
+            <h3 className="text-xl font-semibold mb-4 text-red-400">Victim Portal</h3>
+            <p className="text-slate-400 text-sm">
+              Quickly report emergencies with location detection,
+              urgency tagging, and real-time status tracking.
+            </p>
+          </div>
+
+          {/* Responder */}
+          <div className="bg-[#121f32] border border-blue-500/10 p-8 rounded-2xl">
+            <h3 className="text-xl font-semibold mb-4 text-green-400">Responder Dashboard</h3>
+            <p className="text-slate-400 text-sm">
+              View incoming incidents, accept cases, track routing,
+              and monitor live operational maps.
+            </p>
+          </div>
+
+          {/* Admin */}
+          <div className="bg-[#121f32] border border-blue-500/10 p-8 rounded-2xl">
+            <h3 className="text-xl font-semibold mb-4 text-blue-400">Command Center</h3>
+            <p className="text-slate-400 text-sm">
+              Monitor KPIs, analyze incident distribution,
+              manage zones, and oversee dispatch pipelines.
+            </p>
+          </div>
 
         </div>
       </section>
 
       {/* ================= FINAL CTA ================= */}
-      <section className="max-w-7xl mx-auto px-4 md:px-8 py-16 md:py-24">
+      <section className="max-w-7xl mx-auto px-4 md:px-8 py-16">
 
         <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-3xl p-12 text-center shadow-2xl shadow-blue-600/20">
 
           <h2 className="text-3xl font-bold">
-            Deploy Smarter Emergency Intelligence Today
+            Ready to Transform Emergency Response?
           </h2>
 
           <p className="mt-4 text-blue-100">
-            Join the next generation of AI-powered disaster response systems.
+            Deploy ResQHub and enable structured, transparent,
+            and faster disaster management workflows.
           </p>
 
           <div className="flex flex-col sm:flex-row justify-center gap-6 mt-8">
-
             <Link
               to="/admin/dashboard"
               className="bg-white text-blue-700 px-6 py-3 rounded-xl font-semibold"
             >
-              Access Admin Console
+              Access Platform
             </Link>
 
             <Link
               to="/login"
               className="border border-white px-6 py-3 rounded-xl font-semibold"
             >
-              Schedule Demo
+              Get Started
             </Link>
-
           </div>
 
         </div>
-
       </section>
 
       {/* ================= FOOTER ================= */}
-<footer className="bg-[#0b1420] border-t border-blue-500/10 pt-16 pb-10 mt-24">
+
+      <footer className="bg-[#0b1420] border-t border-blue-500/10 pt-16 pb-10 mt-24">
 
   <div className="max-w-7xl mx-auto px-4 md:px-8 grid sm:grid-cols-2 md:grid-cols-4 gap-10 md:gap-12">
 
     {/* Brand Column */}
     <div>
-      <div className="flex items-center gap-3 mb-6">
-        <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center font-bold">
-          ⚡
-        </div>
+      <div className="flex items-center gap-1 mb-6">
+        <img
+  src={Logo}
+  alt="ResQHub Logo"
+  className="w-10 h-10 object-contain"
+/>
         <span className="text-xl font-semibold">
           ResQ<span className="text-blue-400">Hub</span>
         </span>
       </div>
 
       <p className="text-slate-400 text-sm leading-relaxed">
-        AI-powered disaster response infrastructure enabling
-        real-time coordination between citizens, command centers,
-        and first responders.
+        A real-time emergency coordination platform connecting
+        victims, responders, and command centers into one
+        structured response ecosystem.
       </p>
 
       <p className="text-slate-500 text-xs mt-6">
-        Built for modern emergency operations.
+        Designed for faster reporting, smarter dispatch,
+        and transparent disaster management.
       </p>
     </div>
 
-    {/* Platform Links */}
+    {/* Platform */}
     <div>
       <h3 className="text-sm font-semibold text-white mb-5 uppercase tracking-wider">
         Platform
       </h3>
 
       <ul className="space-y-3 text-sm text-slate-400">
-        <li><a href="#" className="hover:text-white transition">Command Center</a></li>
-        <li><a href="#" className="hover:text-white transition">Victim Portal</a></li>
-        <li><a href="#" className="hover:text-white transition">Responder Network</a></li>
-        <li><a href="#" className="hover:text-white transition">AI Analytics</a></li>
+        <li><a href="#" className="hover:text-white transition">Victim Dashboard</a></li>
+        <li><a href="#" className="hover:text-white transition">Responder Console</a></li>
+        <li><a href="#" className="hover:text-white transition">Admin Command Center</a></li>
+        <li><a href="#" className="hover:text-white transition">Incident Analytics</a></li>
       </ul>
     </div>
 
-    {/* Solutions */}
+    {/* System Modules */}
     <div>
       <h3 className="text-sm font-semibold text-white mb-5 uppercase tracking-wider">
-        Solutions
+        System Modules
       </h3>
 
       <ul className="space-y-3 text-sm text-slate-400">
-        <li><a href="#" className="hover:text-white transition">Municipal Response</a></li>
-        <li><a href="#" className="hover:text-white transition">Disaster Relief</a></li>
-        <li><a href="#" className="hover:text-white transition">NGO Coordination</a></li>
-        <li><a href="#" className="hover:text-white transition">Crisis Monitoring</a></li>
+        <li>Incident Registry</li>
+        <li>Dispatch Pipeline</li>
+        <li>Zone Management</li>
+        <li>Operational Monitoring</li>
       </ul>
     </div>
 
@@ -283,34 +504,17 @@ export default function Home() {
       </h3>
 
       <ul className="space-y-3 text-sm text-slate-400">
-        <li>📍 Global Operations Network</li>
-        <li>📧 contact@resqhub.io</li>
+        <li>📍 Integrated Emergency Network</li>
+        <li>📧 support@resqhub.io</li>
         <li>📞 +91 00000 00000</li>
       </ul>
-
-      {/* Social Icons */}
-      <div className="flex gap-4 mt-6">
-        <div className="w-9 h-9 bg-[#162435] hover:bg-blue-600 transition rounded-lg flex items-center justify-center cursor-pointer">
-          🌐
-        </div>
-        <div className="w-9 h-9 bg-[#162435] hover:bg-blue-600 transition rounded-lg flex items-center justify-center cursor-pointer">
-          🐦
-        </div>
-        <div className="w-9 h-9 bg-[#162435] hover:bg-blue-600 transition rounded-lg flex items-center justify-center cursor-pointer">
-          🔗
-        </div>
-      </div>
     </div>
 
   </div>
 
-  {/* Bottom Bar */}
+  {/* Bottom */}
   <div className="border-t border-blue-500/10 mt-14 pt-6 text-center text-xs text-slate-500">
-    © 2026 ResQHub Systems. All rights reserved.
-    <span className="mx-4">|</span>
-    <a href="#" className="hover:text-white transition">Privacy Policy</a>
-    <span className="mx-4">|</span>
-    <a href="#" className="hover:text-white transition">Terms of Service</a>
+    © 2026 ResQHub | Unified Emergency Coordination System
   </div>
 
 </footer>
@@ -318,4 +522,3 @@ export default function Home() {
     </div>
   );
 }
-

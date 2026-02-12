@@ -1,4 +1,5 @@
 import { NavLink } from "react-router-dom";
+import logo from "../../assets/logo.png"; 
 
 export default function Sidebar() {
   const navItem =
@@ -9,13 +10,14 @@ export default function Sidebar() {
 
   return (
     <aside className="w-64 bg-slate-900 border-r border-blue-500/10 flex flex-col">
-      
-      {/* Logo */}
-      <div className="p-6 flex items-center gap-3">
-        <div className="bg-blue-600 p-2 rounded-lg">
-          <span className="material-icons text-white"></span>
-        </div>
-        <span className="font-bold text-xl">ResQHub</span>
+
+      {/* LOGO SECTION */}
+      <div className="flex items-center mb-10">
+        <img src={logo} alt="ResQHub Logo" className="w-8 h-8" />
+        <h1 className="ml-1 text-lg font-semibold tracking-tight">
+          <span className="text-white">ResQ</span>
+          <span className="text-blue-400">Hub</span>
+        </h1>
       </div>
 
       {/* Nav */}

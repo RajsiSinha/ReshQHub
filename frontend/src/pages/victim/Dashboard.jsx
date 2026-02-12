@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useIncidents } from "../../context/IncidentContext";
 import { Link } from "react-router-dom";
 
@@ -7,55 +7,127 @@ export default function Dashboard() {
   const [urgency, setUrgency] = useState("MEDIUM");
   const [description, setDescription] = useState("");
   const [location, setLocation] = useState(null);
+  const [manualLocation, setManualLocation] = useState("");
+  const [locationError, setLocationError] = useState(false);
+
 
   const { addIncident, incidents } = useIncidents();
 
+  // 🔴 Read Offline Incidents
+const offlineIncidents =
+  JSON.parse(localStorage.getItem("offlineIncidents")) || [];
+
+// Merge Online + Offline
+const allIncidents = [...incidents, ...offlineIncidents];
+
+
   // Detect Location
   const detectLocation = () => {
-    if (!navigator.geolocation) {
-      alert("Geolocation not supported");
-      return;
-    }
+  if (!navigator.geolocation) {
+    setLocationError(true);
+    return;
+  }
 
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        setLocation({
-          lat: position.coords.latitude,
-          lng: position.coords.longitude,
-        });
-      },
-      () => {
-        alert("Unable to retrieve location");
-      }
-    );
-  };
+  navigator.geolocation.getCurrentPosition(
+    (position) => {
+      setLocation({
+        lat: position.coords.latitude,
+        lng: position.coords.longitude,
+      });
+      setLocationError(false);
+    },
+    () => {
+      setLocationError(true);
+    }
+  );
+};
+
 
   // Submit Form
   const handleSubmit = (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    if (!description || !location) {
-      alert("Please add description and detect location");
-      return;
-    }
+  if (!description || (!location && !manualLocation)) {
+  alert("Please add description and provide location");
+  return;
+}
 
-    addIncident({
-      title: incidentType,
-      description,
-      severity: urgency,
-      location,
-    });
+  const isOnline = navigator.onLine;
+
+  const newIncident = {
+    id: Date.now(),
+    title: incidentType,
+    description,
+    severity: urgency,
+    location: location || { manual: manualLocation },
+    status: "PENDING",
+  };
+
+  // 🔴 OFFLINE MODE
+  if (!isOnline) {
+    const offlineIncidents =
+      JSON.parse(localStorage.getItem("offlineIncidents")) || [];
+
+    localStorage.setItem(
+      "offlineIncidents",
+      JSON.stringify([
+        ...offlineIncidents,
+        { ...newIncident, synced: false },
+      ])
+    );
+
+    alert(
+      "⚠ Offline Mode: Incident saved locally. Will sync when connection returns."
+    );
 
     // Reset form
     setDescription("");
     setLocation(null);
     setUrgency("MEDIUM");
-  };
+
+    return; // STOP here if offline
+  }
+
+  // 🟢 ONLINE MODE (normal flow)
+  addIncident(newIncident);
+
+  setDescription("");
+  setLocation(null);
+  setUrgency("MEDIUM");
+};
 
   // Show active (non-resolved) reports
-  const myReports = incidents.filter(
+  const myReports = allIncidents.filter(
     (incident) => incident.status !== "RESOLVED"
   );
+
+  // 🔁 AUTO SYNC WHEN INTERNET RETURNS
+useEffect(() => {
+  const handleOnline = () => {
+    const offlineIncidents =
+      JSON.parse(localStorage.getItem("offlineIncidents")) || [];
+
+    if (offlineIncidents.length === 0) return;
+
+    offlineIncidents.forEach((incident) => {
+      addIncident({
+        ...incident,
+        synced: true,
+      });
+    });
+
+    localStorage.removeItem("offlineIncidents");
+
+    alert("✅ Connection restored. Offline incidents synced successfully.");
+  };
+
+  window.addEventListener("online", handleOnline);
+
+  return () => {
+    window.removeEventListener("online", handleOnline);
+  };
+}, [addIncident]);
+
 
   return (
     <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -136,32 +208,48 @@ export default function Dashboard() {
             </div>
 
             {/* Location */}
-            <div className="space-y-2">
-              <label className="text-xs font-bold text-slate-500 uppercase">
-                Current Location
-              </label>
+<div className="space-y-2">
+  <label className="text-xs font-bold text-slate-500 uppercase">
+    Current Location
+  </label>
 
-              <div className="h-40 w-full rounded-lg bg-slate-800 border border-blue-500/10 flex items-center justify-center">
-                {location ? (
-                  <p className="text-blue-400 text-sm">
-                    Lat: {location.lat.toFixed(4)} | Lng:{" "}
-                    {location.lng.toFixed(4)}
-                  </p>
-                ) : (
-                  <span className="text-slate-500 text-sm">
-                    Location Preview will appear here
-                  </span>
-                )}
-              </div>
+  <div className="h-40 w-full rounded-lg bg-slate-800 border border-blue-500/10 flex items-center justify-center">
+    {location ? (
+      <p className="text-blue-400 text-sm">
+        Lat: {location.lat.toFixed(4)} | Lng:{" "}
+        {location.lng.toFixed(4)}
+      </p>
+    ) : (
+      <span className="text-slate-500 text-sm">
+        Location Preview will appear here
+      </span>
+    )}
+  </div>
 
-              <button
-                type="button"
-                onClick={detectLocation}
-                className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-semibold shadow-lg shadow-blue-600/20"
-              >
-                Detect My Location
-              </button>
-            </div>
+  <button
+    type="button"
+    onClick={detectLocation}
+    className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-semibold shadow-lg shadow-blue-600/20"
+  >
+    Detect My Location
+  </button>
+
+  {/* 🔴 Manual Location Fallback */}
+  
+    <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-3 mt-3">
+      <p className="text-yellow-400 text-xs mb-2">
+        Unable to auto-detect location. Please enter nearest landmark.
+      </p>
+
+      <input
+        type="text"
+        placeholder="Nearest landmark or area"
+        value={manualLocation}
+        onChange={(e) => setManualLocation(e.target.value)}
+        className="w-full bg-slate-800 rounded-lg text-sm py-2 px-3 border border-yellow-500/30 focus:ring-2 focus:ring-yellow-500"
+      />
+    </div>
+</div>
 
             {/* Submit */}
 <button
@@ -203,15 +291,23 @@ export default function Dashboard() {
                   key={report.id}
                   className="p-4 rounded-xl bg-slate-800 border border-blue-500/10"
                 >
-                  <div className="flex justify-between mb-2">
-                    <span className="text-xs font-bold text-blue-400">
-                      #{report.id}
-                    </span>
+                  <div className="flex justify-between mb-2 items-center">
+  <span className="text-xs font-bold text-blue-400">
+    #{report.id}
+  </span>
 
-                    <span className="text-xs font-bold text-orange-400">
-                      {report.status}
-                    </span>
-                  </div>
+  <div className="flex items-center gap-2">
+    <span className="text-xs font-bold text-orange-400">
+      {report.status}
+    </span>
+
+    {report.synced === false && (
+      <span className="text-yellow-400 text-[10px] font-bold bg-yellow-400/10 px-2 py-1 rounded">
+        Pending Sync
+      </span>
+    )}
+  </div>
+</div>
 
                   <p className="text-sm font-semibold">
                     {report.title}
