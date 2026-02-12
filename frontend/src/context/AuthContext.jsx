@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 const AuthContext = createContext();
@@ -6,6 +6,7 @@ const AuthContext = createContext();
 export function AuthProvider({ children }) {
   const navigate = useNavigate();
 
+  // 🔁 Restore user from localStorage ONCE
   const [user, setUser] = useState(() => {
     const savedUser = localStorage.getItem("currentUser");
     return savedUser ? JSON.parse(savedUser) : null;
@@ -16,15 +17,19 @@ export function AuthProvider({ children }) {
     setUser(userData);
     localStorage.setItem("currentUser", JSON.stringify(userData));
 
-    // ✅ Correct Role-Based Redirect
-    if (userData.role === "victim") {
-      navigate("/victim/dashboard");
-    } 
-    else if (userData.role === "responder") {
-      navigate("/responder/dashboard");
-    } 
-    else if (userData.role === "admin") {
-      navigate("/admin/dashboard");
+    // Role-based redirect
+    switch (userData.role) {
+      case "victim":
+        navigate("/victim/dashboard");
+        break;
+      case "responder":
+        navigate("/responder/dashboard");
+        break;
+      case "admin":
+        navigate("/admin/dashboard");
+        break;
+      default:
+        navigate("/");
     }
   };
 
@@ -34,14 +39,6 @@ export function AuthProvider({ children }) {
     localStorage.removeItem("currentUser");
     navigate("/login");
   };
-
-  // 🔁 Auto Restore On Refresh
-  useEffect(() => {
-    const savedUser = localStorage.getItem("currentUser");
-    if (savedUser && !user) {
-      setUser(JSON.parse(savedUser));
-    }
-  }, []);
 
   return (
     <AuthContext.Provider value={{ user, login, logout }}>

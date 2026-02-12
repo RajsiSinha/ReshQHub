@@ -1,4 +1,27 @@
+import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import L from "leaflet";
+import { useIncidents } from "../../context/IncidentContext";
+
+import "leaflet/dist/leaflet.css";
+
 export default function Map() {
+  const { incidents } = useIncidents();
+
+  const offlineIncidents =
+    JSON.parse(localStorage.getItem("offlineIncidents")) || [];
+
+  const allIncidents = [...incidents, ...offlineIncidents];
+
+  // 🔴 Create colored icons
+  const createIcon = (color) =>
+    new L.Icon({
+      iconUrl: `https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-${color}.png`,
+      shadowUrl:
+        "https://unpkg.com/leaflet@1.9.3/dist/images/marker-shadow.png",
+      iconSize: [25, 41],
+      iconAnchor: [12, 41],
+    });
+
   return (
     <div className="max-w-7xl mx-auto space-y-8">
 
@@ -12,25 +35,45 @@ export default function Map() {
 
       {/* Map Container */}
       <div className="bg-slate-900 rounded-xl border border-blue-500/10 p-4">
+        <MapContainer
+          center={[28.6139, 77.2090]} // Default Delhi
+          zoom={12}
+          className="h-[500px] w-full rounded-lg"
+        >
+          <TileLayer
+            attribution='&copy; OpenStreetMap contributors'
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          />
 
-        <div className="h-[500px] w-full rounded-lg bg-slate-800 flex items-center justify-center relative overflow-hidden">
+          {allIncidents.map((incident) => {
+            if (!incident.location || incident.location.manual)
+              return null;
 
-          {/* Placeholder */}
-          <div className="text-center">
-            <span className="material-icons text-blue-500 text-5xl mb-3">
-              map
-            </span>
-            <p className="text-slate-400 text-sm">
-              Map preview will be integrated here
-            </p>
-          </div>
+            const icon =
+              incident.severity === "HIGH"
+                ? createIcon("red")
+                : incident.severity === "MEDIUM"
+                ? createIcon("orange")
+                : createIcon("blue");
 
-          {/* Sample Markers */}
-          <div className="absolute top-24 left-40 bg-red-600 w-4 h-4 rounded-full animate-pulse"></div>
-          <div className="absolute bottom-32 right-56 bg-orange-500 w-4 h-4 rounded-full animate-pulse"></div>
-
-        </div>
-
+            return (
+              <Marker
+                key={incident.id}
+                position={[
+                  incident.location.lat,
+                  incident.location.lng,
+                ]}
+                icon={icon}
+              >
+                <Popup>
+                  <strong>{incident.title}</strong>
+                  <br />
+                  Status: {incident.status}
+                </Popup>
+              </Marker>
+            );
+          })}
+        </MapContainer>
       </div>
 
       {/* Legend */}
@@ -42,12 +85,17 @@ export default function Map() {
         <div className="flex gap-8 text-sm">
           <div className="flex items-center gap-2">
             <div className="w-4 h-4 rounded-full bg-red-600"></div>
-            Critical Incident
+            High Priority
           </div>
 
           <div className="flex items-center gap-2">
             <div className="w-4 h-4 rounded-full bg-orange-500"></div>
             Medium Priority
+          </div>
+
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 rounded-full bg-blue-500"></div>
+            Low Priority
           </div>
         </div>
       </div>

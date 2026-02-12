@@ -1,33 +1,22 @@
 import { useState } from "react";
+import { useIncidents } from "../../context/IncidentContext";
 
 export default function History() {
   const [filter, setFilter] = useState("all");
+  const { incidents } = useIncidents();
 
-  const reports = [
-    {
-      id: "RQ-10294",
-      title: "Severe Medical Emergency",
-      status: "Assigned",
-      date: "12 Feb 2026",
-    },
-    {
-      id: "RQ-10281",
-      title: "Minor Street Hazard",
-      status: "Pending",
-      date: "10 Feb 2026",
-    },
-    {
-      id: "RQ-10275",
-      title: "Basement Leakage",
-      status: "Resolved",
-      date: "5 Feb 2026",
-    },
-  ];
+  // 🔴 Include offline incidents
+  const offlineIncidents =
+    JSON.parse(localStorage.getItem("offlineIncidents")) || [];
+
+  const allReports = [...incidents, ...offlineIncidents];
 
   const filteredReports =
     filter === "all"
-      ? reports
-      : reports.filter((r) => r.status.toLowerCase() === filter);
+      ? allReports
+      : allReports.filter(
+          (r) => r.status?.toLowerCase() === filter
+        );
 
   return (
     <div className="max-w-6xl mx-auto space-y-8">
@@ -77,15 +66,17 @@ export default function History() {
                   {report.title}
                 </h3>
                 <p className="text-xs text-slate-400 mt-1">
-                  {report.date}
+                  {report.createdAt
+                    ? new Date(report.createdAt).toLocaleDateString()
+                    : "Recently Reported"}
                 </p>
               </div>
 
               <span
                 className={`px-3 py-1 text-xs font-bold rounded-full ${
-                  report.status === "Resolved"
+                  report.status === "RESOLVED"
                     ? "bg-green-500/20 text-green-400"
-                    : report.status === "Assigned"
+                    : report.status === "ASSIGNED"
                     ? "bg-orange-500/20 text-orange-400"
                     : "bg-slate-700 text-slate-400"
                 }`}

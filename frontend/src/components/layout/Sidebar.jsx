@@ -1,7 +1,10 @@
 import { NavLink } from "react-router-dom";
 import logo from "../../assets/logo.png"; 
+import { useAuth } from "../../context/AuthContext";
 
 export default function Sidebar() {
+  const { user, logout } = useAuth();
+
   const navItem =
     "flex items-center gap-3 px-4 py-3 rounded-lg transition-all text-slate-400 hover:bg-blue-500/10 hover:text-blue-400";
 
@@ -64,23 +67,34 @@ export default function Sidebar() {
       </nav>
 
       {/* Profile Section */}
-      <div className="p-4 border-t border-blue-500/10">
-        <div className="bg-blue-500/5 p-4 rounded-xl">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center font-bold">
-              A
-            </div>
-            <div>
-              <p className="text-sm font-semibold">Alex Rivera</p>
-              <p className="text-xs text-slate-500">ID: RQ-9942</p>
-            </div>
-          </div>
+<div className="p-4 border-t border-blue-500/10">
+  <div className="bg-blue-500/5 p-4 rounded-xl">
 
-          <button className="w-full text-xs font-semibold py-2 border border-blue-500/20 hover:bg-blue-500/10 rounded-lg transition-all">
-            LOGOUT
-          </button>
-        </div>
+    <div className="flex items-center gap-3 mb-3">
+      <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center font-bold uppercase">
+        {user?.email?.charAt(0)}
       </div>
+
+      <div>
+        <p className="text-sm font-semibold">
+          {user?.email?.split("@")[0]}
+        </p>
+        <p className="text-xs text-blue-400 uppercase">
+          {user?.role}
+        </p>
+      </div>
+    </div>
+
+    <button
+      onClick={logout}
+      className="w-full text-xs font-semibold py-2 border border-blue-500/20 hover:bg-blue-500/10 rounded-lg transition-all"
+    >
+      LOGOUT
+    </button>
+
+  </div>
+</div>
+
     </aside>
   );
 }

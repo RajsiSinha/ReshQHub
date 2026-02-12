@@ -13,12 +13,12 @@ export default function ProtectedRoute({ children, allowedRole }) {
 
   // 🔐 Online → normal auth check
   if (!user) {
-    return <Navigate to="/login" />;
+    return <Navigate to="/login" replace />;
   }
 
   // Optional role check
   if (allowedRole && user.role !== allowedRole) {
-    return <Navigate to="/" />;
+    return <Navigate to="/" replace />;
   }
 
   return children;
