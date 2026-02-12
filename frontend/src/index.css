@@ -49,3 +49,51 @@
   stroke-dashoffset: 0;
   animation: dash 20s linear infinite;
 }
+
+@keyframes marquee {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-200%);
+  }
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
+}
+
+.animate-marquee a:hover {
+  color: #fff;
+  text-decoration: underline;
+}
+
+.animate-marquee {
+  display: flex;
+  animation: marquee 30s linear infinite;
+}
+
+@keyframes softPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+@keyframes flashGlow {
+  0% {
+    box-shadow: 0 0 0px rgba(239, 68, 68, 0);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 25px rgba(239, 68, 68, 0.6);
+    transform: scale(1.02);
+  }
+  100% {
+    box-shadow: 0 0 0px rgba(239, 68, 68, 0);
+    transform: scale(1);
+  }
+}
+
+.animate-flash {
+  animation: flashGlow 1s ease-in-out infinite;
+}
+

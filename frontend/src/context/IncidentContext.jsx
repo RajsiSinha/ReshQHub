@@ -1,9 +1,8 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 
 const IncidentContext = createContext();
 
 export function IncidentProvider({ children }) {
-
   const [incidents, setIncidents] = useState([]);
 
   const addIncident = (incident) => {
@@ -12,7 +11,7 @@ export function IncidentProvider({ children }) {
       {
         ...incident,
         id: `INC-${Date.now()}`,
-        status: "PENDING",
+        status: incident.status || "PENDING",
         createdAt: new Date(),
       },
     ]);
@@ -29,6 +28,33 @@ export function IncidentProvider({ children }) {
   const removeIncident = (id) => {
     setIncidents((prev) => prev.filter((inc) => inc.id !== id));
   };
+
+  // 🔁 GLOBAL AUTO-SYNC WHEN INTERNET RETURNS
+  useEffect(() => {
+    const handleOnline = () => {
+      const offlineIncidents =
+        JSON.parse(localStorage.getItem("offlineIncidents")) || [];
+
+      if (offlineIncidents.length === 0) return;
+
+      offlineIncidents.forEach((incident) => {
+        addIncident({
+          ...incident,
+          synced: true,
+        });
+      });
+
+      localStorage.removeItem("offlineIncidents");
+
+      alert("✅ Connection restored. Offline incidents synced globally.");
+    };
+
+    window.addEventListener("online", handleOnline);
+
+    return () => {
+      window.removeEventListener("online", handleOnline);
+    };
+  }, []);
 
   return (
     <IncidentContext.Provider

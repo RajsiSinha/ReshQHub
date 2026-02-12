@@ -1,8 +1,53 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import logo from "../../assets/logo.png";
 
 export default function Register() {
   const [role, setRole] = useState("victim");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [name, setName] = useState("");
+
+  const navigate = useNavigate();
+
+  const handleRegister = (e) => {
+    e.preventDefault();
+
+    if (!name || !email || !password) {
+      alert("Please fill all fields");
+      return;
+    }
+
+    if (password.length < 8) {
+      alert("Password must be at least 8 characters");
+      return;
+    }
+
+    const users = JSON.parse(localStorage.getItem("users")) || [];
+
+    const userExists = users.find((u) => u.email === email);
+
+    if (userExists) {
+      alert("User already exists.");
+      return;
+    }
+
+    const newUser = {
+      id: Date.now(),
+      name,
+      email,
+      password,
+      role, // victim / volunteer / ngo / authority
+    };
+
+    localStorage.setItem(
+      "users",
+      JSON.stringify([...users, newUser])
+    );
+
+    alert("Account created successfully.");
+    navigate("/login");
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0b1c2d] to-[#091420] text-white flex items-center justify-center px-4 py-10">
@@ -10,15 +55,24 @@ export default function Register() {
       <div className="w-full max-w-md bg-[#0f2235] rounded-2xl p-8 shadow-2xl border border-blue-900">
 
         {/* Logo */}
-        <div className="text-center mb-6">
-          <div className="w-14 h-14 bg-blue-600 rounded-xl mx-auto flex items-center justify-center text-2xl font-bold">
-            +
-          </div>
-          <h1 className="text-2xl font-bold mt-4">ResQHub</h1>
-          <p className="text-gray-400 text-sm">
-            Disaster Management & Response
-          </p>
-        </div>
+<div className="text-center mb-8">
+  <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-700 rounded-2xl mx-auto flex items-center justify-center shadow-lg shadow-blue-900/40">
+    
+    <img
+      src={logo}
+      alt="ResQHub Logo"
+      className="w-16 mx-auto drop-shadow-lg"
+    />
+
+  </div>
+
+  <h1 className="text-2xl font-bold mt-5 tracking-wide">
+    ResQHub
+  </h1>
+  <p className="text-gray-400 text-sm mt-1">
+    Disaster Management & Response
+  </p>
+</div>
 
         {/* Tabs */}
         <div className="flex justify-center mb-6 border-b border-gray-700">
@@ -38,56 +92,82 @@ export default function Register() {
           Join the network to help or request aid.
         </p>
 
-        {/* Role Selection */}
-        <div className="grid grid-cols-2 gap-4 mb-6">
-          {["victim", "volunteer", "ngo", "authority"].map((r) => (
-            <button
-              key={r}
-              onClick={() => setRole(r)}
-              className={`p-4 rounded-xl border transition-all capitalize font-medium
-                ${
-                  role === r
-                    ? "border-blue-500 bg-blue-600/20 text-blue-400"
-                    : "border-gray-700 bg-[#132a40] hover:border-blue-500"
-                }`}
-            >
-              {r}
-            </button>
-          ))}
-        </div>
+        <form onSubmit={handleRegister}>
 
-        {/* Email */}
-        <div className="mb-4">
-          <label className="block text-sm mb-2 text-gray-300">
-            Email Address
-          </label>
-          <input
-            type="email"
-            placeholder="name@example.com"
-            className="w-full p-3 rounded-lg bg-[#132a40] border border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
+          {/* Name (New Field Added, UI Safe) */}
+          <div className="mb-4">
+            <label className="block text-sm mb-2 text-gray-300">
+              Full Name
+            </label>
+            <input
+              type="text"
+              placeholder="Your Name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="w-full p-3 rounded-lg bg-[#132a40] border border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
 
-        {/* Password */}
-        <div className="mb-2">
-          <label className="block text-sm mb-2 text-gray-300">
-            Password
-          </label>
-          <input
-            type="password"
-            placeholder="Create a secure password"
-            className="w-full p-3 rounded-lg bg-[#132a40] border border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
+          {/* Role Selection (UNCHANGED) */}
+          <div className="grid grid-cols-2 gap-4 mb-6">
+            {["victim", "volunteer", "ngo", "authority"].map((r) => (
+              <button
+                type="button"
+                key={r}
+                onClick={() => setRole(r)}
+                className={`p-4 rounded-xl border transition-all capitalize font-medium
+                  ${
+                    role === r
+                      ? "border-blue-500 bg-blue-600/20 text-blue-400"
+                      : "border-gray-700 bg-[#132a40] hover:border-blue-500"
+                  }`}
+              >
+                {r}
+              </button>
+            ))}
+          </div>
 
-        <p className="text-xs text-gray-500 mb-6">
-          Must be at least 8 characters
-        </p>
+          {/* Email (UNCHANGED UI, now controlled) */}
+          <div className="mb-4">
+            <label className="block text-sm mb-2 text-gray-300">
+              Email Address
+            </label>
+            <input
+              type="email"
+              placeholder="name@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full p-3 rounded-lg bg-[#132a40] border border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
 
-        {/* Submit Button */}
-        <button className="w-full bg-blue-600 hover:bg-blue-700 transition-all p-3 rounded-xl font-semibold shadow-lg">
-          Create Account →
-        </button>
+          {/* Password (UNCHANGED UI, now controlled) */}
+          <div className="mb-2">
+            <label className="block text-sm mb-2 text-gray-300">
+              Password
+            </label>
+            <input
+              type="password"
+              placeholder="Create a secure password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full p-3 rounded-lg bg-[#132a40] border border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          <p className="text-xs text-gray-500 mb-6">
+            Must be at least 8 characters
+          </p>
+
+          {/* Submit Button (UNCHANGED UI) */}
+          <button
+            type="submit"
+            className="w-full bg-blue-600 hover:bg-blue-700 transition-all p-3 rounded-xl font-semibold shadow-lg"
+          >
+            Create Account →
+          </button>
+
+        </form>
 
         <p className="text-sm text-gray-400 mt-6 text-center">
           Already have an account?{" "}
@@ -98,6 +178,7 @@ export default function Register() {
             Log In
           </Link>
         </p>
+
       </div>
     </div>
   );

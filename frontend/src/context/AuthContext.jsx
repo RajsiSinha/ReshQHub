@@ -1,27 +1,47 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
   const navigate = useNavigate();
 
-  // Accept object
-  const login = ({ email, role }) => {
-    const fakeUser = { email, role };
-    setUser(fakeUser);
+  const [user, setUser] = useState(() => {
+    const savedUser = localStorage.getItem("currentUser");
+    return savedUser ? JSON.parse(savedUser) : null;
+  });
 
-    // Role-based redirect
-    if (role === "victim") navigate("/dashboard");
-    else if (role === "responder") navigate("/responder/dashboard");
-    else if (role === "admin") navigate("/admin/dashboard");
+  // 🔐 LOGIN
+  const login = (userData) => {
+    setUser(userData);
+    localStorage.setItem("currentUser", JSON.stringify(userData));
+
+    // ✅ Correct Role-Based Redirect
+    if (userData.role === "victim") {
+      navigate("/victim/dashboard");
+    } 
+    else if (userData.role === "responder") {
+      navigate("/responder/dashboard");
+    } 
+    else if (userData.role === "admin") {
+      navigate("/admin/dashboard");
+    }
   };
 
+  // 🔓 LOGOUT
   const logout = () => {
     setUser(null);
+    localStorage.removeItem("currentUser");
     navigate("/login");
   };
+
+  // 🔁 Auto Restore On Refresh
+  useEffect(() => {
+    const savedUser = localStorage.getItem("currentUser");
+    if (savedUser && !user) {
+      setUser(JSON.parse(savedUser));
+    }
+  }, []);
 
   return (
     <AuthContext.Provider value={{ user, login, logout }}>

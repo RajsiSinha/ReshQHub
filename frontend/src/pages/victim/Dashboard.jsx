@@ -9,6 +9,7 @@ export default function Dashboard() {
   const [location, setLocation] = useState(null);
   const [manualLocation, setManualLocation] = useState("");
   const [locationError, setLocationError] = useState(false);
+  const [highlightedId, setHighlightedId] = useState(null);
 
 
   const { addIncident, incidents } = useIncidents();
@@ -100,6 +101,25 @@ const allIncidents = [...incidents, ...offlineIncidents];
   const myReports = allIncidents.filter(
     (incident) => incident.status !== "RESOLVED"
   );
+
+  // 🔥 REAL-TIME INCIDENT HIGHLIGHT
+useEffect(() => {
+  if (allIncidents.length === 0) return;
+
+  const latestIncident = allIncidents[allIncidents.length - 1];
+
+  if (!latestIncident) return;
+
+  setHighlightedId(latestIncident.id);
+
+  const timer = setTimeout(() => {
+    setHighlightedId(null);
+  }, 3000); // highlight duration
+
+  return () => clearTimeout(timer);
+
+}, [allIncidents.length]);
+
 
   // 🔁 AUTO SYNC WHEN INTERNET RETURNS
 useEffect(() => {
@@ -288,9 +308,11 @@ useEffect(() => {
             <div className="space-y-4">
               {myReports.map((report) => (
                 <div
-                  key={report.id}
-                  className="p-4 rounded-xl bg-slate-800 border border-blue-500/10"
-                >
+  key={report.id}
+  className={`p-4 rounded-xl bg-slate-800 border border-blue-500/10 transition-all duration-300
+    ${highlightedId === report.id ? "animate-flash border-red-500" : ""}
+  `}
+>
                   <div className="flex justify-between mb-2 items-center">
   <span className="text-xs font-bold text-blue-400">
     #{report.id}

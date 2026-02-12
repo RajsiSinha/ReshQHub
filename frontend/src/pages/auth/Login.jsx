@@ -1,6 +1,5 @@
-
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import logo from "../../assets/logo.png";
 
@@ -10,7 +9,6 @@ export default function Login() {
   const [password, setPassword] = useState("");
 
   const { login } = useAuth();
-  const navigate = useNavigate();
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -20,20 +18,23 @@ export default function Login() {
       return;
     }
 
-    // Temporary frontend login (for demo)
-    const userData = { email, role };
+    // 🔐 Get stored users
+    const users = JSON.parse(localStorage.getItem("users")) || [];
 
-    // Save user in AuthContext
-    login(userData);
+    const foundUser = users.find(
+      (u) =>
+        u.email === email &&
+        u.password === password &&
+        u.role === role
+    );
 
-    // Role-based redirect
-    if (userData.role === "admin") {
-      navigate("/admin/dashboard");
-    } else if (userData.role === "responder") {
-      navigate("/responder/dashboard");
-    } else {
-      navigate("/victim/dashboard");
+    if (!foundUser) {
+      alert("Invalid credentials or role mismatch");
+      return;
     }
+
+    // ✅ Login (AuthContext handles redirect)
+    login(foundUser);
   };
 
   return (
@@ -42,20 +43,22 @@ export default function Login() {
       <div className="w-full max-w-md bg-[#0f2235] rounded-2xl p-8 shadow-2xl border border-blue-900">
         
         {/* Logo */}
-<div className="text-center mb-8">
-  <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-700 rounded-2xl mx-auto flex items-center justify-center shadow-lg shadow-blue-900/40">
-    
-    <img src={logo} alt="ResQHub Logo" className="w-16 mx-auto drop-shadow-lg" />
+        <div className="text-center mb-8">
+          <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-700 rounded-2xl mx-auto flex items-center justify-center shadow-lg shadow-blue-900/40">
+            <img
+              src={logo}
+              alt="ResQHub Logo"
+              className="w-16 mx-auto drop-shadow-lg"
+            />
+          </div>
 
-  </div>
-
-  <h1 className="text-2xl font-bold mt-5 tracking-wide">
-    ResQHub
-  </h1>
-  <p className="text-gray-400 text-sm mt-1">
-    Disaster Management & Response
-  </p>
-</div>
+          <h1 className="text-2xl font-bold mt-5 tracking-wide">
+            ResQHub
+          </h1>
+          <p className="text-gray-400 text-sm mt-1">
+            Disaster Management & Response
+          </p>
+        </div>
 
         {/* Tabs */}
         <div className="flex justify-center mb-6 border-b border-gray-700">
@@ -134,7 +137,3 @@ export default function Login() {
     </div>
   );
 }
-
-
-
-

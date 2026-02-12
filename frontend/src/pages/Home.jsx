@@ -5,6 +5,7 @@ import { useIncidents } from "../context/IncidentContext";
 import { useMemo, useEffect, useState } from "react";
 import useNetworkStatus from "../hooks/useNetworkStatus";
 
+
 /* ================= COUNT UP HOOK ================= */
 function useCountUp(target, duration = 800) {
   const [count, setCount] = useState(0);
@@ -94,11 +95,109 @@ export default function Home() {
   return (
   <div className="bg-gradient-to-br from-[#0b1420] to-[#0e1c2f] text-slate-100 min-h-screen">
 
-    {!isOnline && (
-  <div className="bg-red-600 text-white text-center py-2 text-sm font-semibold">
-    ⚠ No Internet Connection — Offline Mode Activated
+{/* 🚨 EMERGENCY BROADCAST TICKER */}
+<section className="bg-red-800 text-white py-4 border-b border-red-900 overflow-hidden">
+
+  <div className="relative w-full overflow-hidden">
+
+    <div className="flex animate-marquee whitespace-nowrap items-center text-sm md:text-base tracking-wide">
+
+      {/* Copy 1 */}
+      <div className="flex gap-16 pr-16 items-center">
+
+        <span className="font-semibold uppercase">
+          ⚠ National Critical Response Mode Active
+        </span>
+
+        <span>Emergency Access Available Without Internet</span>
+
+        <a href="tel:112" className="font-semibold hover:underline">
+          Unified Emergency: 112
+        </a>
+
+        <a href="tel:100" className="hover:underline">
+          Police: 100
+        </a>
+
+        <a href="tel:101" className="hover:underline">
+          Fire Services: 101
+        </a>
+
+        <a href="tel:108" className="hover:underline">
+          Ambulance / Medical: 108
+        </a>
+
+        <a href="tel:181" className="hover:underline">
+          Women Helpline: 181
+        </a>
+
+        <a href="tel:1078" className="hover:underline">
+          National Disaster Management: 1078
+        </a>
+
+        <a href="tel:1070" className="hover:underline">
+          State Emergency Operations: 1070
+        </a>
+
+        <a href="tel:1098" className="hover:underline">
+          Child Helpline: 1098
+        </a>
+
+        <span>Offline Incident Capture & Sync Enabled</span>
+
+      </div>
+
+      {/* Copy 2 */}
+      <div className="flex gap-16 pr-16 items-center">
+
+        <span className="font-semibold uppercase">
+          ⚠ National Critical Response Mode Active
+        </span>
+
+        <span>Emergency Access Available Without Internet</span>
+
+        <a href="tel:112" className="font-semibold hover:underline">
+          Unified Emergency: 112
+        </a>
+
+        <a href="tel:100" className="hover:underline">
+          Police: 100
+        </a>
+
+        <a href="tel:101" className="hover:underline">
+          Fire Services: 101
+        </a>
+
+        <a href="tel:108" className="hover:underline">
+          Ambulance / Medical: 108
+        </a>
+
+        <a href="tel:181" className="hover:underline">
+          Women Helpline: 181
+        </a>
+
+        <a href="tel:1078" className="hover:underline">
+          National Disaster Management: 1078
+        </a>
+
+        <a href="tel:1070" className="hover:underline">
+          State Emergency Operations: 1070
+        </a>
+
+        <a href="tel:1098" className="hover:underline">
+          Child Helpline: 1098
+        </a>
+
+        <span>Offline Incident Capture & Sync Enabled</span>
+
+      </div>
+
+    </div>
+
   </div>
-)}
+
+</section>
+
 
       {/* ================= NAVBAR ================= */}
       <header className="sticky top-0 z-50 backdrop-blur-xl bg-[#0b1420]/80 border-b border-blue-500/10">
@@ -438,86 +537,111 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ================= FOOTER ================= */}
+       {/* ================= FOOTER ================= */}
+      
+      <div className="mt-24 h-[1px] bg-gradient-to-r from-transparent via-red-600 to-transparent"></div>
 
-      <footer className="bg-[#0b1420] border-t border-blue-500/10 pt-16 pb-10 mt-24">
+     <footer className="bg-[#0b1420] border-t border-red-900/40 pt-16 pb-10 text-slate-300">
 
-  <div className="max-w-7xl mx-auto px-4 md:px-8 grid sm:grid-cols-2 md:grid-cols-4 gap-10 md:gap-12">
+  <div className="max-w-7xl mx-auto px-4 md:px-8 grid sm:grid-cols-2 md:grid-cols-4 gap-12">
 
-    {/* Brand Column */}
+    {/* 1️⃣ Brand */}
     <div>
-      <div className="flex items-center gap-1 mb-6">
-        <img
-  src={Logo}
-  alt="ResQHub Logo"
-  className="w-10 h-10 object-contain"
-/>
-        <span className="text-xl font-semibold">
-          ResQ<span className="text-blue-400">Hub</span>
-        </span>
-      </div>
+      <h3 className="text-lg font-semibold text-white mb-4">
+        ResQHub
+      </h3>
 
-      <p className="text-slate-400 text-sm leading-relaxed">
-        A real-time emergency coordination platform connecting
-        victims, responders, and command centers into one
-        structured response ecosystem.
-      </p>
-
-      <p className="text-slate-500 text-xs mt-6">
-        Designed for faster reporting, smarter dispatch,
-        and transparent disaster management.
+      <p className="text-sm text-slate-400 leading-relaxed">
+        An emergency coordination platform designed to
+        demonstrate offline-first reporting, incident tracking,
+        and command-center monitoring during disaster scenarios.
       </p>
     </div>
 
-    {/* Platform */}
+    {/* 2️⃣ Platform */}
     <div>
-      <h3 className="text-sm font-semibold text-white mb-5 uppercase tracking-wider">
+      <h4 className="text-sm font-semibold text-white uppercase mb-4 tracking-wide">
         Platform
-      </h3>
+      </h4>
 
-      <ul className="space-y-3 text-sm text-slate-400">
-        <li><a href="#" className="hover:text-white transition">Victim Dashboard</a></li>
-        <li><a href="#" className="hover:text-white transition">Responder Console</a></li>
-        <li><a href="#" className="hover:text-white transition">Admin Command Center</a></li>
-        <li><a href="#" className="hover:text-white transition">Incident Analytics</a></li>
+      <ul className="space-y-3 text-sm">
+        <li>Victim Reporting Dashboard</li>
+        <li>Responder Operations Panel</li>
+        <li>Admin Command Center</li>
+        <li>Zone & Heatmap Analytics</li>
+        <li>Offline Sync Architecture</li>
       </ul>
     </div>
 
-    {/* System Modules */}
+    {/* 3️⃣ Emergency Resources */}
     <div>
-      <h3 className="text-sm font-semibold text-white mb-5 uppercase tracking-wider">
-        System Modules
-      </h3>
+      <h4 className="text-sm font-semibold text-white uppercase mb-4 tracking-wide">
+        National Emergency Resources (India)
+      </h4>
 
-      <ul className="space-y-3 text-sm text-slate-400">
-        <li>Incident Registry</li>
-        <li>Dispatch Pipeline</li>
-        <li>Zone Management</li>
-        <li>Operational Monitoring</li>
+      <ul className="space-y-3 text-sm">
+        <li>
+  <a href="tel:112" className="hover:underline font-medium text-red-400">
+    Unified Emergency – 112
+  </a>
+</li>
+
+        <li><a href="tel:108" className="hover:underline">Medical Services – 108</a></li>
+        <li><a href="tel:100" className="hover:underline">Police – 100</a></li>
+        <li><a href="tel:101" className="hover:underline">Fire – 101</a></li>
+        <li><a href="tel:181" className="hover:underline">Women Helpline – 181</a></li>
       </ul>
     </div>
 
-    {/* Contact */}
+    {/* 4️⃣ Support */}
     <div>
-      <h3 className="text-sm font-semibold text-white mb-5 uppercase tracking-wider">
-        Contact
-      </h3>
+      <h4 className="text-sm font-semibold text-white uppercase mb-4 tracking-wide">
+        Support
+      </h4>
 
       <ul className="space-y-3 text-sm text-slate-400">
-        <li>📍 Integrated Emergency Network</li>
-        <li>📧 support@resqhub.io</li>
-        <li>📞 +91 00000 00000</li>
+        <li>Email: resqhub.demo@gmail.com</li>
+        <li>Technical Feedback</li>
+        <li>Report Platform Issue</li>
       </ul>
     </div>
 
   </div>
 
-  {/* Bottom */}
-  <div className="border-t border-blue-500/10 mt-14 pt-6 text-center text-xs text-slate-500">
-    © 2026 ResQHub | Unified Emergency Coordination System
+  {/* Bottom Bar */}
+<div className="border-t border-red-900/40 mt-12 pt-6 text-center text-xs text-slate-500">
+
+  <div className="flex flex-col md:flex-row items-center justify-center gap-4">
+
+    <span>
+      © 2026 ResQHub | Prototype Demonstration Project
+    </span>
+
+    {/* 🔵 Network Status */}
+    <span
+      className={`px-3 py-1 rounded-full text-[11px] font-medium tracking-wide ${
+        isOnline
+          ? "bg-green-600/20 text-green-400 border border-green-500/30"
+          : "bg-red-600/20 text-red-400 border border-red-500/30 animate-[softPulse_2s_infinite]"
+      }`}
+    >
+      {isOnline
+        ? "System Online"
+        : "Network Disconnected – Fallback Mode Active"}
+    </span>
+
   </div>
+
+  <div className="mt-3 max-w-3xl mx-auto text-[11px] leading-relaxed text-slate-600">
+    This platform is a student-developed prototype and is not affiliated with any government authority.
+    In real emergencies, please contact official national emergency services directly.
+  </div>
+
+</div>
+
 
 </footer>
+
 
     </div>
   );
