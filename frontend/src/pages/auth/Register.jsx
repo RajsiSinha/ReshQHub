@@ -108,24 +108,24 @@ export default function Register() {
             />
           </div>
 
-          {/* Role Selection (UNCHANGED) */}
-          <div className="grid grid-cols-2 gap-4 mb-6">
-            {["victim", "volunteer", "ngo", "authority"].map((r) => (
-              <button
-                type="button"
-                key={r}
-                onClick={() => setRole(r)}
-                className={`p-4 rounded-xl border transition-all capitalize font-medium
-                  ${
-                    role === r
-                      ? "border-blue-500 bg-blue-600/20 text-blue-400"
-                      : "border-gray-700 bg-[#132a40] hover:border-blue-500"
-                  }`}
-              >
-                {r}
-              </button>
-            ))}
-          </div>
+          {/* Role Selection */}
+<div className="grid grid-cols-3 gap-4 mb-6">
+  {["victim", "responder", "admin"].map((r) => (
+    <button
+      type="button"
+      key={r}
+      onClick={() => setRole(r)}
+      className={`p-4 rounded-xl border transition-all capitalize font-medium
+        ${
+          role === r
+            ? "border-blue-500 bg-blue-600/20 text-blue-400"
+            : "border-gray-700 bg-[#132a40] hover:border-blue-500"
+        }`}
+    >
+      {r}
+    </button>
+  ))}
+</div>
 
           {/* Email (UNCHANGED UI, now controlled) */}
           <div className="mb-4">

@@ -15,13 +15,18 @@ export default function Sidebar() {
     <aside className="w-64 bg-slate-900 border-r border-blue-500/10 flex flex-col">
 
       {/* LOGO SECTION */}
-      <div className="flex items-center mb-10">
-        <img src={logo} alt="ResQHub Logo" className="w-8 h-8" />
-        <h1 className="ml-1 text-lg font-semibold tracking-tight">
-          <span className="text-white">ResQ</span>
-          <span className="text-blue-400">Hub</span>
-        </h1>
-      </div>
+<div className="flex items-center gap-1 px-6 py-6">
+  <img
+    src={logo}
+    alt="ResQHub Logo"
+    className="w-9 h-9 object-contain"
+  />
+
+  <h1 className="ml-1 text-lg font-semibold tracking-tight">
+    <span className="text-white">ResQ</span>
+    <span className="text-blue-400">Hub</span>
+  </h1>
+</div>
 
       {/* Nav */}
       <nav className="flex-1 px-4 space-y-1">

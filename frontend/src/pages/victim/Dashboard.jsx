@@ -2,6 +2,25 @@ import { useState, useEffect } from "react";
 import { useIncidents } from "../../context/IncidentContext";
 import { Link } from "react-router-dom";
 
+
+function StatCard({ label, value, color }) {
+  const colors = {
+    blue: "text-blue-400",
+    yellow: "text-yellow-400",
+    orange: "text-orange-400",
+    green: "text-green-400",
+  };
+
+  return (
+    <div className="bg-slate-900 border border-blue-500/10 p-4 rounded-xl text-center">
+      <p className="text-xs text-slate-400 uppercase">{label}</p>
+      <p className={`text-2xl font-bold mt-1 ${colors[color]}`}>
+        {value}
+      </p>
+    </div>
+  );
+}
+
 export default function Dashboard() {
   const [incidentType, setIncidentType] = useState("Medical Emergency");
   const [urgency, setUrgency] = useState("MEDIUM");
@@ -102,6 +121,11 @@ const allIncidents = [...incidents, ...offlineIncidents];
     (incident) => incident.status !== "RESOLVED"
   );
 
+const total = allIncidents.length;
+const pending = allIncidents.filter(i => i.status === "PENDING").length;
+const assigned = allIncidents.filter(i => i.status === "ASSIGNED").length;
+const resolved = allIncidents.filter(i => i.status === "RESOLVED").length;
+
   // 🔥 REAL-TIME INCIDENT HIGHLIGHT
 useEffect(() => {
   if (allIncidents.length === 0) return;
@@ -150,10 +174,43 @@ useEffect(() => {
 
 
   return (
-    <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8">
+    <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 mt-6">
+
+      {/* 🔷 PAGE HEADER */}
+<div className="lg:col-span-12 border-b border-blue-500/10 mb-6">
+  <div className="flex items-center justify-between">
+    
+    <div>
+      <h1 className="text-2xl md:text-2xl font-semibold tracking-tight">
+        ResQ<span className="text-blue-400">Hub</span> Victim Dashboard
+      </h1>
+      <p className="text-sm text-slate-400 mt-1">
+        Report incidents and track emergency response status in real-time.
+      </p>
+    </div>
+
+    <div className="hidden md:flex items-center gap-2 bg-blue-600/10 px-4 py-2 rounded-xl border border-blue-500/20">
+      <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+      <span className="text-xs font-semibold text-blue-300">
+        System Active
+      </span>
+    </div>
+
+  </div>
+</div>
+
 
       {/* LEFT SECTION */}
       <div className="lg:col-span-7 space-y-6">
+
+        {/* 📊 STATUS SUMMARY */}
+<div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+  <StatCard label="Total Reports" value={total} color="blue" />
+  <StatCard label="Pending" value={pending} color="yellow" />
+  <StatCard label="Assigned" value={assigned} color="orange" />
+  <StatCard label="Resolved" value={resolved} color="green" />
+</div>
+
 
         <section className="bg-slate-900 rounded-xl p-6 border border-blue-500/10">
           <h2 className="text-lg font-bold mb-6 uppercase tracking-tight">
